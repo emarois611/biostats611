@@ -1,0 +1,120 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- read_csv("admissions_releases_states.csv")
+```
+
+```{r}
+clean_data <- data %>% filter(complete.cases(.))
+```
+
+```{r}
+write.csv(clean_data, "admissions_releases_states.csv", row.names = FALSE)
+```
+
+```{r}
+#Box plot: Admissions by race
+# Reshape data: Pivot the columns into a longer format
+data_long <- data %>%
+  pivot_longer(
+    cols = starts_with("admissions_"),   # Select columns that represent race
+    names_to = "race",                   # Create a new column for race
+    values_to = "admissions"             # Create a new column for admissions
+  )
+
+# Create the box plot
+ggplot(data_long, aes(x = race, y = admissions, fill = race)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(
+    title = "Box Plot of Admissions by Race",
+    x = "Race",
+    y = "Admissions",
+    fill = "Race",
+    caption = "Observations:
+    - 'admissions_white' shows the highest median and variability in admissions.
+    - 'admissions_black' has a moderate spread, but fewer outliers.
+    - Other racial categories ('Asian', 'AmerInd', etc.) show lower medians and distributions.
+    - There are a significant number of outliers in the 'white' category."
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.caption = element_text(size = 10, hjust = 0)
+  )
+```
+
+```{r}
+#Bar graph: Total admissions and releases over time
+clean_data %>%
+  select(date, admissions_total, releases_total) %>%
+  pivot_longer(cols = -date, names_to = "category", values_to = "count") %>%
+  ggplot(aes(x = date, y = count, fill = category)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(
+    title = "Total Admissions and Releases Over Time",
+    x = "Date", 
+    y = "Count", 
+    fill = "Legend",
+    caption = "Observations:
+    - Both admissions and releases show a marked increase starting from the mid-2010s.
+    - The pattern of admissions and releases is closely aligned, with fluctuations occurring at similar times, suggesting a cyclical trend in both categories.
+    - Releases tend to follow a more gradual increase, while admissions sometimes experience sharper peaks."
+  ) +
+  scale_fill_brewer(palette = "Set2") +
+  theme(plot.caption = element_text(size = 10, hjust = 0))
+```
+
+```{r}
+#Heat map: Admissions by race over time
+clean_data %>%
+  select(date, admissions_white, admissions_black, admissions_hispanic, admissions_amerind, admissions_asian, admissions_other) %>%
+  pivot_longer(cols = -date, names_to = "race", values_to = "admissions") %>%
+  ggplot(aes(x = date, y = race, fill = admissions)) +
+  geom_tile() +
+  theme_minimal() +
+  labs(
+    title = "Heat Map of Admissions by Race Over Time",
+    x = "Date", 
+    y = "Race", 
+    fill = "Admissions",
+    caption = "Observations:
+    - This heat map visualizes the trends in admissions by race over time.
+    - Admissions are categorized into six racial/ethnic groups: White, Black, Hispanic, American Indian (Amerind), Asian, and Other.
+    - The color intensity represents the number of admissions for each racial group by year.
+    - From the mid-2000s onward, there are noticeable fluctuations, with certain racial groups showing higher variability in admissions over time, suggesting possible policy changes or external factors influencing admissions."
+  ) +
+  scale_fill_viridis_c() +
+  theme(plot.caption = element_text(size = 10, hjust = 0))
+```
+
+```{r}
+#Line graph: Trends in admissions and releases over time by state
+clean_data %>%
+  group_by(date, state) %>%
+  summarise(admissions = sum(admissions_total), releases = sum(releases_total)) %>%
+  pivot_longer(cols = c(admissions, releases), names_to = "category", values_to = "count") %>%
+  ggplot(aes(x = date, y = count, color = category, group = category)) +
+  geom_line(size = 1.2) +
+  facet_wrap(~ state) +
+  theme_minimal() +
+  labs(
+    title = "Trends in Admissions and Releases Over Time by State",
+    x = "Date", 
+    y = "Count", 
+    color = "Legend",
+    caption = "Observations:
+    - This plot visualizes trends in admissions and releases across different states over time.
+    - The data is broken down by the total number of admissions and releases for each state, with time represented on the x-axis.
+    - The lines for admissions and releases are shown for each state, allowing for comparisons of trends over time.
+    - States show varying trends, with some states having sharper increases or decreases in admissions and releases, reflecting changes in local policies or external factors."
+  ) +
+  theme(plot.caption = element_text(size = 10, hjust = 0))
+```
