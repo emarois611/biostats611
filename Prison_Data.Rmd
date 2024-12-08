@@ -48,6 +48,7 @@ ggplot(data_long, aes(x = race, y = admissions, fill = race)) +
     axis.text.x = element_text(angle = 45, hjust = 1),
     plot.caption = element_text(size = 10, hjust = 0)
   )
+ggsave("Admmissions by Race box plot.png")
 ```
 
 ```{r}
@@ -70,6 +71,7 @@ clean_data %>%
   ) +
   scale_fill_brewer(palette = "Set2") +
   theme(plot.caption = element_text(size = 10, hjust = 0))
+ggsave("Total admit and release.png")
 ```
 
 ```{r}
@@ -93,6 +95,7 @@ clean_data %>%
   ) +
   scale_fill_viridis_c() +
   theme(plot.caption = element_text(size = 10, hjust = 0))
+ggsave("Heat map by race.png")
 ```
 
 ```{r}
@@ -117,4 +120,5 @@ clean_data %>%
     - States show varying trends, with some states having sharper increases or decreases in admissions and releases, reflecting changes in local policies or external factors."
   ) +
   theme(plot.caption = element_text(size = 10, hjust = 0))
+ggsave("Admit and release by state.png")
 ```
